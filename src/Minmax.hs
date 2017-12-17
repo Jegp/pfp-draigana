@@ -14,7 +14,6 @@ instance Functor Tree where
 reptree :: (a -> [a]) -> a -> Tree a
 reptree f a = Node a (map (reptree f) (f a))
 
-
 -- Find value for max key from assoc list
 maxkey :: Ord k => [(k, v)] -> v
 maxkey = snd . maximumBy(comparing fst)

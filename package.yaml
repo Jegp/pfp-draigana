@@ -1,17 +1,16 @@
 name:                draigana
 version:             0.1.0.0
-github:              githubuser/draigana
-license:             BSD3
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
+github:              jegp/draigana
+license:             GPLv3
+author:              Jens Egholm Pedersen
+maintainer:          jensegholm@protonmail.com
+copyright:           2017 Jens Egholm Pedersen
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
 # Metadata used when publishing your package
-synopsis:            Short description of your package
+synopsis:            AI for playing the game draigana
 # category:            Web
 
 # To avoid duplicated efforts in documentation and dealing with the
@@ -43,6 +42,15 @@ executables:
     - -rtsopts
     dependencies:
     - draigana
+
+tests:
+  spec:
+    source-dirs: test
+    main: Spec.hs
+    dependencies:
+      - draigana
+      - hspec == 2.*
+      - QuickCheck
 
 ghc-options:
   - -O3

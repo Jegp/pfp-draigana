@@ -1,6 +1,6 @@
 module Dragon where
 
-import Data.List (intersperse,intercalate)
+import Data.List (intersperse,intercalate,transpose)
 
 
 data Side = L | R | T | B
@@ -32,7 +32,6 @@ printMove :: Move -> IO()
 printMove (s, idx) =
   putStrLn $ show s ++ show idx
 
-
 -- Dummy implementation, just repeats the last move or starts with T2
 nextMove :: Incomplete -> Move
 nextMove (_, []) = (T, 2)
@@ -58,3 +57,41 @@ showBoard n board = border ++ inner ++ border
 
 toggle Red  = Blue
 toggle Blue = Red
+
+--
+-- Heuristics for board configurations
+--
+
+-- A 'Streak' is the longest coherent number of pieces
+type Streak = Int
+
+-- Defines the game value for players Red and Blue
+data GameValue = GameValue { red :: Streak, blue :: Streak }
+
+maxGameValue :: GameValue -> GameValue -> GameValue
+maxGameValue (GameValue r1 b1) (GameValue r2 b2) =
+  (GameValue (if r1 > r2 then r1 else r2) (if b1 > b2 then b1 else b2))
+
+sumGameValue :: GameValue -> GameValue -> GameValue
+sumGameValue (GameValue r1 b1) (GameValue r2 b2) = (GameValue (r1 + r2) (b1 + b2))
+
+collectValue :: GameValue -> Maybe Player -> GameValue
+collectValue v Nothing = v
+collectValue (GameValue r b) (Just Red) = (GameValue (r + 1) b)
+collectValue (GameValue r b) (Just Blue) = (GameValue r (b + 1))
+
+boardToGameValue :: Board -> GameValue
+boardToGameValue rows =
+  let startValue = (GameValue 0 0)
+      rowValue = map (\row -> foldl collectValue startValue row) rows
+      columnValue = map (\column -> foldl collectValue startValue column) (transpose rows)
+      rowSum = foldl maxGameValue startValue rowValue
+      columnSum = foldl maxGameValue startValue columnValue
+  in maxGameValue rowSum columnSum
+
+-- Calculates the heuristic for a game where +100 is a red win and -100 a blue win
+heuristic :: Board -> Float
+heuristic board =
+  let (GameValue red blue) = boardToGameValue board
+  in (normalize red) - (normalize blue) where
+    normalize n = (fromIntegral (100 * n)) / (fromIntegral (length board))
