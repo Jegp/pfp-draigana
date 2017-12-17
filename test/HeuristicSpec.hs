@@ -16,19 +16,19 @@ spec :: Spec
 spec = do
   describe "game heuristic" $ do
     it "should detect a red win in a column" $ do
-      heuristic (boardFromList [[Just Red, Just Red], [Nothing, Nothing]]) `shouldBe` 100
+      heuristic (Red, boardFromList [[Just Red, Just Red], [Nothing, Nothing]], (L, 1)) `shouldBe` 100
 
     it "should detect a blue win in a column" $ do
-      heuristic (boardFromList [[Just Blue, Just Blue], [Nothing, Nothing]]) `shouldBe` -100
+      heuristic (Red, boardFromList [[Just Blue, Just Blue], [Nothing, Nothing]], (L, 1)) `shouldBe` -100
 
     it "should compute value for non-win red" $ do
-      heuristic (boardFromList [[Just Red, Nothing], [Nothing, Nothing]]) `shouldBe` 50
+      heuristic (Red, boardFromList [[Just Red, Nothing], [Nothing, Nothing]], (L, 1)) `shouldBe` 50
 
     it "should compute value for non-win blue" $ do
-      heuristic (boardFromList [[Nothing, Nothing], [Nothing, Just Blue]]) `shouldBe` -50
+      heuristic (Red, boardFromList [[Nothing, Nothing], [Nothing, Just Blue]], (L, 1)) `shouldBe` -50
 
     it "should calculate a zero game" $ do
-      heuristic (boardFromList [[Nothing, Nothing], [Nothing, Nothing]]) `shouldBe` 0
+      heuristic (Red, boardFromList [[Nothing, Nothing], [Nothing, Nothing]], (L, 1)) `shouldBe` 0
 
     it "should give equal weight to red and blue" $ do
-      heuristic (boardFromList [[Just Red, Nothing], [Nothing, Just Blue]]) `shouldBe` 0
+      heuristic (Red, boardFromList [[Just Red, Nothing], [Nothing, Just Blue]], (L, 1)) `shouldBe` 0

@@ -37,17 +37,17 @@ spec = do
   describe "inserting move" $ do
     let board = Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Nothing, Nothing]]
     it "should insert a move from the left" $ do
-      insertDragon (Blue, board) (L, 1) `shouldBe` (Red,
-        Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]])
+      insertDragon (Blue, board, (L, 1)) `shouldBe` (Red,
+        Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]], (L, 1))
 
     it "should insert a move from the right" $ do
-      insertDragon (Red, board) (R, 2) `shouldBe` (Blue,
-        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Just Red, Nothing]])
+      insertDragon (Red, board, (R, 2)) `shouldBe` (Blue,
+        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Just Red, Nothing]], (R, 2))
 
     it "should insert a move from the top" $ do
-      insertDragon (Blue, board) (T, 1) `shouldBe` (Red,
-        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Just Blue, Nothing]])
+      insertDragon (Blue, board, (T, 1)) `shouldBe` (Red,
+        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Just Blue, Nothing]], (T, 1))
 
     it "should insert a move from the bottom" $ do
-      insertDragon (Blue, board) (B, 2) `shouldBe` (Red,
-        Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]])
+      insertDragon (Blue, board, (B, 2)) `shouldBe` (Red,
+        Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]], (B, 2))

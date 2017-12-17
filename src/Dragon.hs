@@ -2,6 +2,7 @@ module Dragon where
 
 import Data.Maybe (isJust, isNothing)
 import Lib
+import Minmax (aimove)
 
 import Data.Sequence (Seq)
 import qualified Data.Sequence as Seq
@@ -37,25 +38,25 @@ printMove (s, idx) =
 
 -- Dummy implementation, just repeats the last move or starts with T2
 nextMove :: Conf -> Move
-nextMove (_, _) = (T, 2)
+nextMove (player, board, move) =
+  let (_, _, bestMove) = aimove 1 possibleMoves heuristic (player, board, move)
+  in bestMove
+
+-- Generates possible moves from a board of size n
+possibleMoves :: Conf -> [Conf]
+possibleMoves (player, board, move) =
+  map execute $ concatMap (\i -> [(T, i), (L, i), (B, i), (R, i)]) [1..(Seq.length board)]
+  where
+    execute :: Move -> Conf
+    execute newMove = insertDragon (player, board, newMove)
 
 -- Representing boards with sequences
 type Field = Maybe Player
 type Board = Seq (Seq Field)
-type Conf  = (Player, Board)
+type Conf  = (Player, Board, Move)
 
 emptyBoard :: Int -> Board
 emptyBoard n = Seq.replicate n $ Seq.replicate n Nothing
-
--- showBoard :: Int -> Board -> String
--- showBoard n board = border ++ inner ++ border
---   where
---     border = "  " ++ (concat $ replicate n "+-") ++ "+\n"
---     inner = intercalate border (fmap showLine board)
---     showLine row = "  |" ++ (row >>= showPlayer) ++ "\n"
---     showPlayer (Just Red) = "R|"
---     showPlayer (Just _)   = "B|"
---     showPlayer _          = " |"
 
 toggle Red  = Blue
 toggle Blue = Red
@@ -63,24 +64,25 @@ toggle Blue = Red
 confFromIncomplete :: Incomplete -> Conf
 confFromIncomplete (n, moves) =
   let board = emptyBoard n
-  in foldl (\newConf move -> insertDragon newConf move) (Red, board) moves
+  in foldl (\(p, b, _) newMove -> insertDragon (p, b, newMove)) (Red, board, (L, 1)) moves
 
-insertDragon :: Conf -> Move -> Conf
-insertDragon (player, board) (side, i) =
+insertDragon :: Conf -> Conf
+insertDragon (player, board, (side, i)) =
   let index = i - 1 -- moves are 1-indexed
+      newPlayer = toggle player
   in case side of
     L -> let updatedRow = insertDragonList player (Seq.index board index)
-         in (toggle player, Seq.update index updatedRow board)
+         in (newPlayer, Seq.update index updatedRow board, (side, i))
     R -> let reversedRow = Seq.reverse (Seq.index board index)
              updatedRow = insertDragonList player reversedRow
-         in (toggle player, Seq.update index (Seq.reverse updatedRow) board)
+         in (newPlayer, Seq.update index (Seq.reverse updatedRow) board, (side, i))
     T -> let transposed = transpose board
              updatedRow = insertDragonList player (Seq.index transposed index)
-         in (toggle player, transpose (Seq.update index updatedRow transposed))
+         in (newPlayer, transpose (Seq.update index updatedRow transposed), (side, i))
     B -> let transposed = transpose board
              reversedRow = Seq.reverse (Seq.index transposed index)
              updatedRow = insertDragonList player reversedRow
-         in (toggle player, transpose (Seq.update index (Seq.reverse updatedRow) transposed))
+         in (newPlayer, transpose (Seq.update index (Seq.reverse updatedRow) transposed), (side, i))
 
 insertDragonList :: Player -> Seq Field -> Seq Field
 insertDragonList player list =
@@ -125,8 +127,9 @@ boardToGameValue rows =
   in maxGameValue rowSum columnSum
 
 -- Calculates the heuristic for a game where +100 is a red win and -100 a blue win
-heuristic :: Board -> Float
-heuristic board =
+heuristic :: Conf -> Int
+heuristic (player, board, _) =
   let (GameValue red blue) = boardToGameValue board
-  in (normalize red) - (normalize blue) where
-    normalize n = (fromIntegral (100 * n)) / (fromIntegral (length board))
+      scale = if player == Red then 1 else -1
+  in ((normalize red) - (normalize blue)) * scale where
+    normalize n = (100 * n) `quot` (length board)
