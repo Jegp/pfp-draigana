@@ -1,7 +1,10 @@
 module Dragon where
 
+import Data.Maybe (isJust, isNothing)
 import Data.List (intersperse,intercalate,transpose)
 
+import Data.Sequence (Seq)
+import qualified Data.Sequence as Seq
 
 data Side = L | R | T | B
   deriving (Eq, Show, Read)
@@ -42,6 +45,7 @@ nextMove (_, moves) = last moves
 
 type Board = [[Maybe Player]]
 type Conf  = (Player, Board)
+type Field = Maybe Player
 
 emptyBoard n = replicate n $ replicate n Nothing
 
@@ -57,6 +61,30 @@ showBoard n board = border ++ inner ++ border
 
 toggle Red  = Blue
 toggle Blue = Red
+
+-- boardFromIncomplete :: Incomplete -> Conf
+-- boardFromIncomplete (n, moves) =
+--   let board = emptyBoard n
+--   in foldl insertDragon (Red, board) moves
+
+--insertDragon :: Conf -> Move -> Conf
+--insertDragon (player, board) (side, index)
+--  | side == L = insertDragonList (\n -> n + 1) 0 (index !! board)
+--  | side == R = insertDragonList (\n -> n - 1) (length board) (index !! board)
+--  | side == T = insertDragonList (\n -> n + 1) 0 (index !! (transpose board))
+--  | side == B = insertDragonList (\n -> n - 1) (length board) (index !! (transpose board))
+
+insertDragonList :: Player -> Seq Field -> Seq Field
+insertDragonList player list =
+  case Seq.findIndexL isJust list of
+    Just 0 ->
+      let appendedList = (Just player) Seq.<| list
+      in case Seq.elemIndexL Nothing appendedList of
+        Nothing -> Seq.take (Seq.length list) appendedList
+        Just index -> Seq.deleteAt index appendedList
+    Just n -> Seq.update (n - 1) (Just player) list
+    Nothing -> Seq.drop 1 (list Seq.|> (Just player))
+
 
 --
 -- Heuristics for board configurations
