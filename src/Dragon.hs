@@ -101,40 +101,55 @@ insertDragonList player list =
 -- Heuristics for board configurations
 --
 
+-- A 'Line of power' is a full line of one colour
+type LOP = Int
+
 -- A 'Streak' is the longest coherent number of pieces
 type Streak = Int
 
 -- Defines the game value for players Red and Blue
-data GameValue = GameValue { red :: Streak, blue :: Streak }
+data GameValue a = GameValue { red :: a, blue :: a }
+  deriving (Show, Eq)
 
-maxGameValue :: GameValue -> GameValue -> GameValue
+maxGameValue :: GameValue Streak -> GameValue Streak -> GameValue Streak
 maxGameValue (GameValue r1 b1) (GameValue r2 b2) =
   (GameValue (if r1 > r2 then r1 else r2) (if b1 > b2 then b1 else b2))
 
-sumGameValue :: GameValue -> GameValue -> GameValue
+sumGameValue :: GameValue Streak -> GameValue Streak -> GameValue Streak
 sumGameValue (GameValue r1 b1) (GameValue r2 b2) = (GameValue (r1 + r2) (b1 + b2))
 
-collectValue :: GameValue -> Maybe Player -> GameValue
+collectValue :: GameValue Streak -> Maybe Player -> GameValue Streak
 collectValue v Nothing = v
 collectValue (GameValue r b) (Just Red) = (GameValue (r + 1) b)
 collectValue (GameValue r b) (Just Blue) = (GameValue r (b + 1))
 
-boardToGameValue :: Board -> GameValue
+collectLop :: Int -> GameValue LOP -> GameValue Streak -> GameValue LOP
+collectLop size (GameValue lr lb) (GameValue red blue) =
+  let blueLop = if blue == size then 1 else 0
+      redLop = if red == size then 1 else 0
+  in (GameValue (redLop + lr) (blueLop + lb))
+
+boardToGameValue :: Board -> (GameValue Streak, GameValue LOP)
 boardToGameValue rows =
   let startValue = (GameValue 0 0)
       rowValue = fmap (\row -> foldl collectValue startValue row) rows
       columnValue = fmap (\column -> foldl collectValue startValue column) (transpose rows)
-      rowSum = foldl maxGameValue startValue rowValue
-      columnSum = foldl maxGameValue startValue columnValue
-  in maxGameValue rowSum columnSum
+      rowSum = foldl sumGameValue startValue rowValue
+      columnSum = foldl sumGameValue startValue columnValue
+      boardSize = Seq.length rows
+      rop = foldl (collectLop boardSize) startValue rowValue
+      cop = foldl (collectLop boardSize) startValue columnValue
+  in (maxGameValue rowSum columnSum, sumGameValue rop cop)
 
 -- Calculates the heuristic for a game where +100 is a red win and -100 a blue win
 heuristic :: Conf -> Int
 heuristic (player, board, _) =
-  let (GameValue red blue) = boardToGameValue board
+  let (GameValue red blue, GameValue redLop blueLop) = boardToGameValue board
       scale = if player == Red then 1 else -1
-  in case (normalize red, normalize blue) of
-    (100, _) -> 100 * scale
-    (_, 100) -> -100 * scale
-    (red, blue) -> (red - blue) * scale
-  where normalize n = (100 * n) `quot` (length board)
+      value = if redLop > blueLop then (redLop * 100)
+        else if blueLop < redLop then (blueLop * 100)
+        else if redLop /= 0 then 100-- playing player lost
+        else ((normalize red) - (normalize blue))
+  in value * scale
+  where
+    normalize n = (100 * n) `quot` (length board)

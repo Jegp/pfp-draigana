@@ -25,5 +25,5 @@ spec = do
     it "can find the winning move for red" $ do
       let board = Seq.fromList [Seq.fromList [Just Red, Nothing, Just Red]
                                , Seq.fromList [Just Blue, Nothing, Just Blue]
-                               , Seq.fromList [Just Blue, Just Blue, Just Blue]]
-      ; heuristic (Red, board, (R, 3)) `shouldBe` -100 --nextMove 1 (Red, board, (L, 1)) `shouldBe` (L, 1)
+                               , Seq.fromList [Just Blue, Just Blue, Nothing]]
+      ; nextMove 1 (Red, board, (L, 1)) `shouldBe` (L, 1)

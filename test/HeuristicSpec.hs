@@ -14,6 +14,22 @@ boardFromList fields =
 
 spec :: Spec
 spec = do
+  describe "game value" $ do
+    it "should calculate the game value of an empty board" $ do
+      boardToGameValue (boardFromList [[Nothing, Nothing], [Nothing, Nothing]]) `shouldBe` (GameValue 0 0, GameValue 0 0)
+
+    it "should calculate the game value of one red tile" $ do
+      boardToGameValue (boardFromList [[Just Red, Nothing], [Nothing, Nothing]]) `shouldBe` (GameValue 1 0, GameValue 0 0)
+
+    it "should calculate the game value of one blue tile" $ do
+      boardToGameValue (boardFromList [[Just Blue, Nothing], [Nothing, Nothing]]) `shouldBe` (GameValue 0 1, GameValue 0 0)
+
+    it "should calculate the game value of one lop" $ do
+      boardToGameValue (boardFromList [[Just Blue, Just Blue], [Nothing, Nothing]]) `shouldBe` (GameValue 0 2, GameValue 0 1)
+
+    it "should calculate the game value of two lop" $ do
+      boardToGameValue (boardFromList [[Just Blue, Just Blue], [Just Blue, Nothing]]) `shouldBe` (GameValue 0 3, GameValue 0 2)
+
   describe "game heuristic" $ do
     it "should detect a red win in a row" $ do
       heuristic (Red, boardFromList [[Just Red, Just Red], [Nothing, Nothing]], (L, 1)) `shouldBe` 100
@@ -46,3 +62,8 @@ spec = do
       heuristic (Blue, boardFromList [[Nothing, Just Blue, Nothing]
                                      , [Just Red, Just Red, Just Red]
                                      , [Nothing, Just Blue, Just Blue]], (R, 2)) `shouldBe` -100
+
+    it "can find the winning value of a 3x3 game" $ do
+      heuristic (Red, boardFromList[[Just Red, Just Red, Just Red]
+                                   ,[Just Blue, Nothing, Just Blue]
+                                   ,[Just Blue, Just Blue, Just Blue]], (L, 1)) `shouldBe` 100
