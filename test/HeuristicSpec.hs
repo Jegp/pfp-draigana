@@ -21,6 +21,12 @@ spec = do
     it "should detect a blue win in a column" $ do
       heuristic (boardFromList [[Just Blue, Just Blue], [Nothing, Nothing]]) `shouldBe` -100
 
+    it "should compute value for non-win red" $ do
+      heuristic (boardFromList [[Just Red, Nothing], [Nothing, Nothing]]) `shouldBe` 50
+
+    it "should compute value for non-win blue" $ do
+      heuristic (boardFromList [[Nothing, Nothing], [Nothing, Just Blue]]) `shouldBe` -50
+
     it "should calculate a zero game" $ do
       heuristic (boardFromList [[Nothing, Nothing], [Nothing, Nothing]]) `shouldBe` 0
 
