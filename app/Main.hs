@@ -5,5 +5,5 @@ import Dragon
 main :: IO ()
 main = do
   incomplete <- readIncomplete
-  let m = nextMove incomplete
+  let m = nextMove (confFromIncomplete incomplete)
   printMove m

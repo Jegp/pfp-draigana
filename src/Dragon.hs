@@ -36,9 +36,8 @@ printMove (s, idx) =
   putStrLn $ show s ++ show idx
 
 -- Dummy implementation, just repeats the last move or starts with T2
-nextMove :: Incomplete -> Move
-nextMove (_, []) = (T, 2)
-nextMove (_, moves) = last moves
+nextMove :: Conf -> Move
+nextMove (_, _) = (T, 2)
 
 -- Representing boards with sequences
 type Field = Maybe Player
@@ -61,8 +60,8 @@ emptyBoard n = Seq.replicate n $ Seq.replicate n Nothing
 toggle Red  = Blue
 toggle Blue = Red
 
-boardFromIncomplete :: Incomplete -> Conf
-boardFromIncomplete (n, moves) =
+confFromIncomplete :: Incomplete -> Conf
+confFromIncomplete (n, moves) =
   let board = emptyBoard n
   in foldl (\newConf move -> insertDragon newConf move) (Red, board) moves
 

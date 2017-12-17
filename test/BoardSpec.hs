@@ -51,7 +51,3 @@ spec = do
     it "should insert a move from the bottom" $ do
       insertDragon (Blue, board) (B, 2) `shouldBe` (Red,
         Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]])
-
-    it "should insert many moves from an Incomplete" $ do
-      boardFromIncomplete (2, [(L, 1), (B, 1), (B, 2)]) `shouldBe` (Blue,
-        Seq.fromList [Seq.fromList [Just Blue, Just Red], Seq.fromList [Nothing, Just Red]])
