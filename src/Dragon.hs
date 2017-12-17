@@ -7,6 +7,8 @@ import Minmax (aimove)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as Seq
 
+import Debug.Trace (trace)
+
 data Side = L | R | T | B
   deriving (Eq, Show, Read)
 
@@ -36,10 +38,10 @@ printMove :: Move -> IO()
 printMove (s, idx) =
   putStrLn $ show s ++ show idx
 
--- Dummy implementation, just repeats the last move or starts with T2
-nextMove :: Conf -> Move
-nextMove (player, board, move) =
-  let (_, _, bestMove) = aimove 1 possibleMoves heuristic (player, board, move)
+-- Finds the next move to a given depth
+nextMove :: Int -> Conf -> Move
+nextMove depth (player, board, move) =
+  let (_, _, bestMove) = aimove depth possibleMoves heuristic (player, board, move)
   in bestMove
 
 -- Generates possible moves from a board of size n
@@ -131,5 +133,8 @@ heuristic :: Conf -> Int
 heuristic (player, board, _) =
   let (GameValue red blue) = boardToGameValue board
       scale = if player == Red then 1 else -1
-  in ((normalize red) - (normalize blue)) * scale where
-    normalize n = (100 * n) `quot` (length board)
+  in case (normalize red, normalize blue) of
+    (100, _) -> 100 * scale
+    (_, 100) -> -100 * scale
+    (red, blue) -> (red - blue) * scale
+  where normalize n = (100 * n) `quot` (length board)
