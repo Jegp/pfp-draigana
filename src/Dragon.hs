@@ -1,7 +1,7 @@
 module Dragon where
 
 import Data.Maybe (isJust, isNothing)
-import Data.List (intersperse,intercalate,transpose)
+import Lib
 
 import Data.Sequence (Seq)
 import qualified Data.Sequence as Seq
@@ -43,21 +43,21 @@ nextMove (_, moves) = last moves
 
 -- Representing boards with lists
 
-type Board = [[Maybe Player]]
-type Conf  = (Player, Board)
 type Field = Maybe Player
+type Board = Seq (Seq Field)
+type Conf  = (Player, Board)
 
 emptyBoard n = replicate n $ replicate n Nothing
 
-showBoard :: Int -> Board -> String
-showBoard n board = border ++ inner ++ border
-  where
-    border = "  " ++ (concat $ replicate n "+-") ++ "+\n"
-    inner = intercalate border (map showLine board)
-    showLine row = "  |" ++ (row >>= showPlayer) ++ "\n"
-    showPlayer (Just Red) = "R|"
-    showPlayer (Just _)   = "B|"
-    showPlayer _          = " |"
+-- showBoard :: Int -> Board -> String
+-- showBoard n board = border ++ inner ++ border
+--   where
+--     border = "  " ++ (concat $ replicate n "+-") ++ "+\n"
+--     inner = intercalate border (fmap showLine board)
+--     showLine row = "  |" ++ (row >>= showPlayer) ++ "\n"
+--     showPlayer (Just Red) = "R|"
+--     showPlayer (Just _)   = "B|"
+--     showPlayer _          = " |"
 
 toggle Red  = Blue
 toggle Blue = Red
@@ -67,8 +67,8 @@ toggle Blue = Red
 --   let board = emptyBoard n
 --   in foldl insertDragon (Red, board) moves
 
---insertDragon :: Conf -> Move -> Conf
---insertDragon (player, board) (side, index)
+-- insertDragon :: Conf -> Move -> Conf
+-- insertDragon (player, board) (side, index)
 --  | side == L = insertDragonList (\n -> n + 1) 0 (index !! board)
 --  | side == R = insertDragonList (\n -> n - 1) (length board) (index !! board)
 --  | side == T = insertDragonList (\n -> n + 1) 0 (index !! (transpose board))
@@ -84,7 +84,6 @@ insertDragonList player list =
         Just index -> Seq.deleteAt index appendedList
     Just n -> Seq.update (n - 1) (Just player) list
     Nothing -> Seq.drop 1 (list Seq.|> (Just player))
-
 
 --
 -- Heuristics for board configurations
@@ -111,8 +110,8 @@ collectValue (GameValue r b) (Just Blue) = (GameValue r (b + 1))
 boardToGameValue :: Board -> GameValue
 boardToGameValue rows =
   let startValue = (GameValue 0 0)
-      rowValue = map (\row -> foldl collectValue startValue row) rows
-      columnValue = map (\column -> foldl collectValue startValue column) (transpose rows)
+      rowValue = fmap (\row -> foldl collectValue startValue row) rows
+      columnValue = fmap (\column -> foldl collectValue startValue column) (transpose rows)
       rowSum = foldl maxGameValue startValue rowValue
       columnSum = foldl maxGameValue startValue columnValue
   in maxGameValue rowSum columnSum

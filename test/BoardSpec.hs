@@ -10,7 +10,7 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "A Board" $ do
+  describe "pushing on a board" $ do
     it "should insert a piece in an empty list from the left" $ do
       insertDragonList Red (Seq.fromList [Nothing, Nothing]) `shouldBe`
         (Seq.fromList [Nothing, Just Red])
@@ -33,3 +33,9 @@ spec = do
       let board = Seq.fromList [Just Red, Nothing, Nothing]
           expected = Seq.fromList [Just Blue, Just Red, Nothing]
       ; insertDragonList Blue board `shouldBe` expected
+
+  -- describe "inserting move" $ do
+  --   let board = Seq.fromList
+  --     [Seq.fromList [Nothing, Nothing], Seq.fromList [Nothing, Nothing]]
+  --   it "should insert a move from the left" $ do
+  --
