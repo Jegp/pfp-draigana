@@ -40,14 +40,13 @@ nextMove :: Incomplete -> Move
 nextMove (_, []) = (T, 2)
 nextMove (_, moves) = last moves
 
-
--- Representing boards with lists
-
+-- Representing boards with sequences
 type Field = Maybe Player
 type Board = Seq (Seq Field)
 type Conf  = (Player, Board)
 
-emptyBoard n = replicate n $ replicate n Nothing
+emptyBoard :: Int -> Board
+emptyBoard n = Seq.replicate n $ Seq.replicate n Nothing
 
 -- showBoard :: Int -> Board -> String
 -- showBoard n board = border ++ inner ++ border
@@ -62,14 +61,14 @@ emptyBoard n = replicate n $ replicate n Nothing
 toggle Red  = Blue
 toggle Blue = Red
 
--- boardFromIncomplete :: Incomplete -> Conf
--- boardFromIncomplete (n, moves) =
---   let board = emptyBoard n
---   in foldl insertDragon (Red, board) moves
+boardFromIncomplete :: Incomplete -> Conf
+boardFromIncomplete (n, moves) =
+  let board = emptyBoard n
+  in foldl (\newConf move -> insertDragon newConf move) (Red, board) moves
 
 insertDragon :: Conf -> Move -> Conf
 insertDragon (player, board) (side, i) =
-  let index = i - 1
+  let index = i - 1 -- moves are 1-indexed
   in case side of
     L -> let updatedRow = insertDragonList player (Seq.index board index)
          in (toggle player, Seq.update index updatedRow board)
