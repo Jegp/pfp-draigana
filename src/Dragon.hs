@@ -67,12 +67,22 @@ toggle Blue = Red
 --   let board = emptyBoard n
 --   in foldl insertDragon (Red, board) moves
 
--- insertDragon :: Conf -> Move -> Conf
--- insertDragon (player, board) (side, index)
---  | side == L = insertDragonList (\n -> n + 1) 0 (index !! board)
---  | side == R = insertDragonList (\n -> n - 1) (length board) (index !! board)
---  | side == T = insertDragonList (\n -> n + 1) 0 (index !! (transpose board))
---  | side == B = insertDragonList (\n -> n - 1) (length board) (index !! (transpose board))
+insertDragon :: Conf -> Move -> Conf
+insertDragon (player, board) (side, i) =
+  let index = i - 1
+  in case side of
+    L -> let updatedRow = insertDragonList player (Seq.index board index)
+         in (toggle player, Seq.update index updatedRow board)
+    R -> let reversedRow = Seq.reverse (Seq.index board index)
+             updatedRow = insertDragonList player reversedRow
+         in (toggle player, Seq.update index (Seq.reverse updatedRow) board)
+    T -> let transposed = transpose board
+             updatedRow = insertDragonList player (Seq.index transposed index)
+         in (toggle player, transpose (Seq.update index updatedRow transposed))
+    B -> let transposed = transpose board
+             reversedRow = Seq.reverse (Seq.index transposed index)
+             updatedRow = insertDragonList player reversedRow
+         in (toggle player, transpose (Seq.update index (Seq.reverse updatedRow) transposed))
 
 insertDragonList :: Player -> Seq Field -> Seq Field
 insertDragonList player list =

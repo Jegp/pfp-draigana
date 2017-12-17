@@ -19,3 +19,7 @@ spec = do
     it "should transpose an empty sequence" $ do
       let matrix = (Seq.fromList []::(Seq.Seq (Seq.Seq Int)))
       ; transpose matrix `shouldBe` matrix
+
+    it "should transpose twice for the same result" $ do
+      let matrix = Seq.fromList [Seq.fromList [1, 2], Seq.fromList [3, 4]]
+      ; transpose (transpose matrix) `shouldBe` matrix
