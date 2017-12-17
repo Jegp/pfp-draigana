@@ -148,8 +148,8 @@ heuristic (player, board, _) =
       scale = if player == Red then 1 else -1
       value = if redLop > blueLop then (redLop * 100)
         else if blueLop < redLop then (blueLop * 100)
-        else if redLop /= 0 then 100-- playing player lost
+        else if redLop /= 0 then 100 -- playing player lost
         else ((normalize red) - (normalize blue))
-  in value * scale
+  in value * scale -- Scale the value based on the current player playing
   where
     normalize n = (100 * n) `quot` (length board)

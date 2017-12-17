@@ -48,6 +48,10 @@ spec = do
       insertDragon (Blue, board, (T, 1)) `shouldBe` (Red,
         Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Just Blue, Nothing]], (T, 1))
 
+    it "should insert a move from the top" $ do
+      insertDragon (Blue, board, (T, 2)) `shouldBe` (Red,
+        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Nothing, Just Blue]], (T, 2))
+
     it "should insert a move from the bottom" $ do
       insertDragon (Blue, board, (B, 2)) `shouldBe` (Red,
         Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]], (B, 2))
