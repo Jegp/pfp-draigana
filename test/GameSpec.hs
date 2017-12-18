@@ -38,22 +38,19 @@ spec = do
       let board = boardFromList [[Just Red, Nothing, Just Red]
                                 , [Just Blue, Nothing, Just Blue]
                                 , [Just Blue, Just Blue, Nothing]]
-      ; nextMove (Blue, board, (L, 1)) `shouldBe` (B, 1)
+      ; move <- nextMove 100 (Blue, board, (L, 1))
+      move `shouldBe` (R, 3)
 
     it "can load a test and find the winning move" $ do
       let boardSize = 4
           moves = parseMoves ["L2","T2","L2","B2","R2"]
           conf = confFromIncomplete (boardSize, moves)
-          stringMoves = map showConf (possibleMoves conf)
-      ; putStrLn $ showConf conf
-      -- nextMove conf `shouldBe` (L, 2)
-       where
-         showConf :: Conf -> [Char]
-         showConf (player, board, move) = ((show move) ++ (show player) ++ (show (heuristic (player, board, move))) ++ (show (Seq.index board 0)))
+      ; move <- nextMove 100000 conf
+      move `shouldBe` (T, 2)
 
     -- Note: Test not working because minimax minimizes first?
     -- it "can find the winning move for red" $ do
     --   let board = Seq.fromList [Seq.fromList [Just Red, Nothing, Just Red]
     --                            , Seq.fromList [Just Blue, Nothing, Just Blue]
     --                            , Seq.fromList [Just Blue, Just Blue, Nothing]]
-    --   ; nextMove 1 (Red, board, (L, 1)) `shouldBe` (L, 1)
+    --   ; nextMove (Red, board, (L, 1)) `shouldBe` (L, 1)

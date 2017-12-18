@@ -5,5 +5,6 @@ import Dragon
 main :: IO ()
 main = do
   incomplete <- readIncomplete
-  let m = nextMove (confFromIncomplete incomplete)
+  let timer = 10 * 1000 * 1000 -- 10 seconds in microseconds
+  m <- nextMove timer (confFromIncomplete incomplete)
   printMove m

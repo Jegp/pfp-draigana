@@ -4,12 +4,14 @@ import Data.Maybe (isJust, isNothing)
 import Lib
 import Minmax (aimove)
 
+import Control.Concurrent
+import Control.Concurrent.MVar
+import Control.Concurrent.QSemN
+
 import Data.List (intercalate)
 import Data.Foldable (toList)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as Seq
-
-import Debug.Trace (trace)
 
 data Side = L | R | T | B
   deriving (Eq, Show, Read)
@@ -52,14 +54,38 @@ showBoard n seqBoard = border ++ inner ++ border
     showPlayer (Just _)   = "B|"
 showPlayer _ = " |"
 
--- Finds the next move to a given depth
-nextMove :: Conf -> Move
-nextMove conf =
-  let (_, _, bestMove) = moveToDepth 1 conf
-  in bestMove
-  where
-    moveToDepth :: Int -> Conf -> Conf
-    moveToDepth depth c = aimove depth possibleMoves heuristic c
+-- Finds the next move within a given time in microseconds
+nextMove :: Int -> Conf -> IO Move
+nextMove timer conf = do
+  bestVar <- newEmptyMVar
+  forkIO $ asyncNextMove bestVar 1 conf
+  threadDelay timer
+  ((_, _, bestMove), _) <- readMVar bestVar
+  return bestMove
+
+-- aimove depth moves static p
+asyncNextMove :: MVar (Conf, Int) -> Int -> Conf -> IO ()
+asyncNextMove var depth conf = do
+    let moves = possibleMoves conf
+    children <- newQSemN 0
+    ids <- mapM (\c -> forkIO (synchNextMove children var (depth + 1) c)) moves
+    waitQSemN children (length moves)
+    asyncNextMove var (depth + 1) conf
+
+synchNextMove :: QSemN -> MVar (Conf, Int) -> Int -> Conf -> IO ()
+synchNextMove semaphore var depth conf = do
+  let bestConf = aimove depth possibleMoves heuristic conf
+  currentVar <- tryTakeMVar var
+  case currentVar of
+    Nothing -> putMVar var (bestConf, depth)
+    Just (currentConf, currentDepth) ->
+      let h1 = heuristic currentConf
+          h2 = heuristic bestConf
+      in if h1 >= 100 || h1 <= -100 then return ()
+      else if currentDepth < depth then return ()
+      else if (heuristic currentConf) > (heuristic bestConf) then return ()
+      else putMVar var (bestConf, depth)
+  signalQSemN semaphore 1
 
 -- Generates possible moves from a board of size n
 possibleMoves :: Conf -> [Conf]
