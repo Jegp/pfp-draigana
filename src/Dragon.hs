@@ -4,6 +4,8 @@ import Data.Maybe (isJust, isNothing)
 import Lib
 import Minmax (aimove)
 
+import Data.List (intercalate)
+import Data.Foldable (toList)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as Seq
 
@@ -38,11 +40,26 @@ printMove :: Move -> IO()
 printMove (s, idx) =
   putStrLn $ show s ++ show idx
 
+showBoard :: Int -> Board -> String
+showBoard n seqBoard = border ++ inner ++ border
+  where
+    board :: [[Field]]
+    board = toList (fmap toList board)
+    border = "  " ++ (concat $ replicate n "+-") ++ "+\n"
+    inner = intercalate border (map showLine board)
+    showLine row = "  |" ++ (row >>= showPlayer) ++ "\n"
+    showPlayer (Just Red) = "R|"
+    showPlayer (Just _)   = "B|"
+showPlayer _ = " |"
+
 -- Finds the next move to a given depth
-nextMove :: Int -> Conf -> Move
-nextMove depth (player, board, move) =
-  let (_, _, bestMove) = aimove depth possibleMoves heuristic (player, board, move)
+nextMove :: Conf -> Move
+nextMove conf =
+  let (_, _, bestMove) = moveToDepth 1 conf
   in bestMove
+  where
+    moveToDepth :: Int -> Conf -> Conf
+    moveToDepth depth c = aimove depth possibleMoves heuristic c
 
 -- Generates possible moves from a board of size n
 possibleMoves :: Conf -> [Conf]
@@ -88,14 +105,13 @@ insertDragon (player, board, (side, i)) =
 
 insertDragonList :: Player -> Seq Field -> Seq Field
 insertDragonList player list =
-  case Seq.findIndexL isJust list of
-    Just 0 ->
+  case Seq.index list 0 of
+    Nothing -> Seq.update 0 (Just player) list
+    Just _ ->
       let appendedList = (Just player) Seq.<| list
       in case Seq.elemIndexL Nothing appendedList of
         Nothing -> Seq.take (Seq.length list) appendedList
         Just index -> Seq.deleteAt index appendedList
-    Just n -> Seq.update (n - 1) (Just player) list
-    Nothing -> Seq.drop 1 (list Seq.|> (Just player))
 
 --
 -- Heuristics for board configurations

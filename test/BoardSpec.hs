@@ -13,7 +13,7 @@ spec = do
   describe "pushing on a board" $ do
     it "should insert a piece in an empty list from the left" $ do
       insertDragonList Red (Seq.fromList [Nothing, Nothing]) `shouldBe`
-        (Seq.fromList [Nothing, Just Red])
+        (Seq.fromList [Just Red, Nothing])
 
     it "should insert a piece in a half full list" $ do
       let board = Seq.fromList [Nothing, Just Red]
@@ -38,20 +38,20 @@ spec = do
     let board = Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Nothing, Nothing]]
     it "should insert a move from the left" $ do
       insertDragon (Blue, board, (L, 1)) `shouldBe` (Red,
-        Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]], (L, 1))
+        Seq.fromList [Seq.fromList [Just Blue, Nothing], Seq.fromList [Nothing, Nothing]], (L, 1))
 
     it "should insert a move from the right" $ do
       insertDragon (Red, board, (R, 2)) `shouldBe` (Blue,
-        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Just Red, Nothing]], (R, 2))
+        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Nothing, Just Red]], (R, 2))
 
     it "should insert a move from the top" $ do
       insertDragon (Blue, board, (T, 1)) `shouldBe` (Red,
-        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Just Blue, Nothing]], (T, 1))
+        Seq.fromList [Seq.fromList [Just Blue, Nothing], Seq.fromList [Nothing, Nothing]], (T, 1))
 
     it "should insert a move from the top" $ do
       insertDragon (Blue, board, (T, 2)) `shouldBe` (Red,
-        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Nothing, Just Blue]], (T, 2))
+        Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]], (T, 2))
 
     it "should insert a move from the bottom" $ do
       insertDragon (Blue, board, (B, 2)) `shouldBe` (Red,
-        Seq.fromList [Seq.fromList [Nothing, Just Blue], Seq.fromList [Nothing, Nothing]], (B, 2))
+        Seq.fromList [Seq.fromList [Nothing, Nothing], Seq.fromList [Nothing, Just Blue]], (B, 2))
