@@ -1,1 +1,3 @@
-# draigana
+# Draigana
+
+Author: xtp778
